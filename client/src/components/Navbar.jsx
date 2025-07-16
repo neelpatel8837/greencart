@@ -1,0 +1,138 @@
+import React, { useEffect } from 'react';
+import { NavLink } from 'react-router-dom';
+import { assets } from '../assets/assets';
+import { useAppContext } from '../context/AppContext';
+import toast from 'react-hot-toast';
+
+const Navbar = () => {
+  const [open, setOpen] = React.useState(false);
+  const {user, setUser, setShowUserLogin, navigate, setSearchQuery, searchQuery, getCartCount, axios} = useAppContext();
+  
+  const logout = async () => {
+    try {
+      const { data } = await axios.get('/api/user/logout')
+      if(data.success){
+        toast.success(data.message)
+        setUser(null);
+        navigate('/')
+      }else{
+        toast.error(data.message)
+     }
+    } catch (error) {
+      toast.error(error.message)
+    }
+ }
+
+  useEffect(()=>{
+     if(searchQuery.length > 0){
+      navigate("/products")
+     }
+  },[searchQuery])
+  
+  return (
+    <nav className="flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4 border-b border-gray-300 bg-white relative transition-all">
+     
+      <NavLink to="/" onClick={()=>setOpen(false)}>
+        <img className="h-9" src={assets.logo} alt="logo" />
+      </NavLink>
+
+    <div className='flex items-center gap-6 sm:hidden'>
+    <div onClick={()=> navigate("/cart")} className="relative cursor-pointer">
+          <img src={assets.nav_cart_icon} alt='cart' className='w-6 opacity-80'/>
+          <span className="absolute -top-2 -right-3 text-xs text-white bg-emerald-500 w-5 h-5 flex items-center justify-center rounded-full">
+            {getCartCount()}
+          </span>
+        </div>
+    <button onClick={() => open ? setOpen(false) : setOpen(true)} aria-label="Menu" className="sm:hidden" >
+      <img src={assets.menu_icon} alt="menu" />
+      </button>
+  </div>
+    
+{   open && (
+    <div className={`${
+          open ? 'flex' : 'hidden'
+        } absolute top-[60px] left-0 w-full bg-white shadow-md py-4 flex-col items-start gap-2 px-5 text-sm md:hidden z-10`}>
+
+        <NavLink to="/" onClick={()=>setOpen(false)} className="block py-2">Home</NavLink>
+        <NavLink to="/products" onClick={()=>setOpen(false)} className="block py-2">All Product</NavLink>
+        {user && 
+        <NavLink to="/products" onClick={()=>setOpen(false)} className="block py-2">My Orders</NavLink>
+        }
+        <NavLink to="/" onClick={()=>setOpen(false)} className="block py-2">Contact</NavLink>
+        
+    {!user ? (
+        <button onClick={()=>{
+            setOpen(false);
+            setShowUserLogin(true);
+          }} style={{ backgroundColor: 'var(--color-primary)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-primary-dull)')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-primary)')}
+            className="cursor-pointer px-6 py-2 mt-2 transition text-white rounded-full text-sm">
+          Login
+        </button>
+        ) : (
+        <button onClick={logout} style={{ backgroundColor: 'var(--color-primary)' }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-primary-dull)')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-primary)')}
+          className="cursor-pointer px-6 py-2 mt-2 transition text-white rounded-full text-sm">
+          Logout
+        </button>
+        )}
+        
+      </div>
+      )}
+
+      <div className="hidden sm:flex items-center gap-8">
+        <NavLink to="/" className="hover:text-gray-600">
+          Home
+        </NavLink>
+        <NavLink to="/products" className="hover:text-gray-600">
+          All Product
+        </NavLink>
+        <NavLink to="/contact" className="hover:text-gray-600">
+          Contact
+        </NavLink>
+      </div>
+
+    
+      <div className="hidden lg:flex items-center text-sm gap-2 border border-gray-300 px-3 rounded-full">
+        <input
+          onChange={(e)=> setSearchQuery(e.target.value)
+
+          } className="py-1.5 w-full bg-transparent outline-none placeholder-gray-500"
+          type="text"
+          placeholder="Search products"
+        />
+        <img src={assets.search_icon} alt='search' className='w-4 h-4'/>
+      </div>
+
+    
+      <div className="flex items-center gap-5 relative">
+        <div onClick={()=> navigate("/cart")} className="relative cursor-pointer">
+          <img src={assets.nav_cart_icon} alt='cart' className='w-6 opacity-80'/>
+          <span className="absolute -top-2 -right-3 text-xs text-white bg-emerald-500 w-5 h-5 flex items-center justify-center rounded-full">
+            {getCartCount()}
+          </span>
+        </div>
+     { !user ? (   <button onClick={()=> setShowUserLogin(true)} style={{ backgroundColor: 'var(--color-primary)' }}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-primary-dull)')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--color-primary)')}
+          className="cursor-pointer px-6 py-2 transition text-white rounded-full text-sm">
+          Login
+        </button>)
+        :
+        (
+          <div className='relative group'>
+            <img src={assets.profile_icon} className='w-10' alt="" />
+            <ul className='hidden group-hover:block absolute top-10 right-0 bg-white shadow border border-gray-200 py-2.5 w-30 rounded-md text-sm z-40'>
+              <li onClick={()=>navigate("my-orders")} className='p-1.5 pl-3 hover:bg-primary/10 cursor-pointer'>My Orders</li>
+              <li onClick={logout} className='p-1.5 pl-3 hover:bg-primary/10 cursor-pointer'>Logout</li>
+            </ul>
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;
