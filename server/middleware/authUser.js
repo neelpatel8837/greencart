@@ -1,22 +1,27 @@
-import jwt from 'jsonwebtoken'
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
-const authUser = async(req,res,next)=>{
-    const {token} = req.cookies;
+const authUser = async (req, res, next) => {
+  const { token } = req.cookies;
 
-    if(!token){
-        return res.json({ success: false, message: 'Not Authenticated' });
+  if (!token) {
+    return res.status(401).json({ success: false, message: 'Not Authenticated' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded.id).select('-password');
+
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'User not found' });
     }
-    try {
-        const tokenDecode = jwt.verify(token, process.env.JWT_SECRET)
-        if(tokenDecode.id){
-            req.userId = tokenDecode.id;
-        }else{
-         return res.json({ success: false, message: 'Not Authorized'});   
-        }
-        next();
 
-    } catch (error) {
-        res.json({ success: false, message: error.message});
-    }
-}
-export default authUser
+    req.user = user;  
+    next();
+  } catch (error) {
+    return res.status(401).json({ success: false, message: error.message });
+  }
+};
+
+export default authUser;

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { assets } from '../assets/assets'
 import { useAppContext } from '../context/AppContext'
 import toast from 'react-hot-toast'
-import { data } from 'react-router-dom'
 
 const InputField =({type, placeholder, name, handleChange, address})=>(
     <input 
@@ -19,7 +18,15 @@ const AddAddress = () => {
 
     const {axios, user, navigate} = useAppContext()
     const [address, setAddress] = useState({
-        firstName:'', lastName:'', email:'', street:'',city:'', state:'', zipcode:'', country:'', phone:'',
+        firstName:'',
+        lastName:'', 
+        email:'', 
+        street:'',
+        city:'', 
+        state:'', 
+        zipcode:'', 
+        country:'', 
+        phone:''
     })
 
     const handleChange = (e)=> {
@@ -34,7 +41,7 @@ const AddAddress = () => {
     const onSubmitHandler = async(e)=>{
         e.preventDefault();
         try {
-            const {data} = await axios.post('/api/address/add',{address})
+            const {data} = await axios.post('/api/address/add', {address});
             
             if(data.success){
                 toast.success(data.message)

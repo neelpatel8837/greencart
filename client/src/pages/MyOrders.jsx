@@ -5,14 +5,23 @@ import { dummyOrders } from '../assets/assets'
 const MyOrders = () => {
 
     const[myOrders, setMyOrders] = useState([])
-    const {currency} = useAppContext()
+    const {currency, axios, user} = useAppContext()
 
     const fetchMyOrders = async()=>{
-        setMyOrders(dummyOrders)
+        try {
+            const {data} = await axios.get('/api/order/user');
+            if(data.success){
+                setMyOrders(data.orders)
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
     useEffect(()=>{
-        fetchMyOrders()
-    },[])
+        if(user){
+            fetchMyOrders()
+        }
+    },[user])
 
 
   return (
@@ -36,17 +45,23 @@ const MyOrders = () => {
                                 <img src={item.product.image[0]} alt="" className='w-16 h-16'/>
                             </div>
                             <div className='ml-4'>
+                            {item.product && (
+                              <>
                                 <h2 className='text-xl font-medium text-gray-800'>{item.product.name}</h2>
                                 <p>Category: {item.product.category}</p>
+                                <p>Price: {currency}{item.product.offerPrice}</p>
+                            </>
+                            )}
                             </div>
                         </div>
                     <div className='flex flex-col justify-center md:ml-8 mb-4 md:mb-0'>
                         <p>Quantity: {item.quantity || "1"}</p>
                         <p>Status: {order.status}</p>
-                        <p>Date: {new Date(order.createAt).toLocaleDateString()}</p>
+                        <p>Date: { new Date(order.createdAt).toLocaleDateString() }</p>
                     </div>
                     <p className='text-emerald-500 text-lg font-medium'>
-                        Amount: {currency}{item.product.offerPrice * item.quantity}
+                        Amount: {currency}
+                        {item.product ? item.product.offerPrice * item.quantity : 0}
                     </p>
                     </div>
                 ))}

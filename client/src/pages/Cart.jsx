@@ -46,7 +46,7 @@ const Cart = () => {
             }
 
             //place order with COD
-            if(paymentOption==="COD"){
+            if(paymentOption === "COD"){
                 const {data}= await axios.post('/api/order/cod',{
                     userId: user._id,
                     items: cartArray.map(item=>({product: item._id, quantity:item.quantity})),
